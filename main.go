@@ -1,9 +1,13 @@
 package main
 
 import (
+	"errors"
+	"flag"
 	"fmt"
 	"net"
 	"sort"
+	"strconv"
+	"strings"
 )
 
 func worker(ports, results chan int) { // 01
@@ -19,7 +23,86 @@ func worker(ports, results chan int) { // 01
 	}
 }
 
+type ScanFlags struct {
+	host []string
+	port []int
+}
+
+func parseFlags() ScanFlags {
+	var flags ScanFlags
+
+	flag.StringVar(&flags.host, "host", "127.0.0.1", "Host to scan") // ! I need to fix these
+	flag.IntVar(&flags.port, "port", 80, "Port to scan")
+
+	flag.Parse()
+	return flags
+}
+
+// parsePortList parses a comma-separated list of ports and returns a slice of valid port numbers.
+// It returns an error if no valid ports are provided or if any port is out of range
+func parsePortList(portsString string) ([]int, error) {
+	var portNums []int
+	portSet := make(map[int]struct{})
+	portList := strings.Split(portsString, ",")
+	for _, port := range portList {
+		var portNum int
+		// port range functionality
+		if strings.Contains(port, "-") {
+			portsRange := strings.SplitN(port, "-", 2)
+			if len(portsRange) != 2 {
+				continue
+			}
+			startPort, err := strconv.Atoi(strings.TrimSpace((portsRange[0])))
+			if err != nil || startPort < 1 || startPort > 65535 {
+				continue
+			}
+			endPort, err := strconv.Atoi(strings.TrimSpace((portsRange[1])))
+			if err != nil || endPort < 1 || endPort > 65535 {
+				continue
+			}
+			if startPort > endPort {
+				tmp := startPort
+				startPort = endPort
+				endPort = tmp
+			}
+			for i := startPort; i <= endPort; i++ {
+				if _, exists := portSet[i]; !exists {
+					portSet[i] = struct{}{}
+					portNums = append(portNums, i)
+				}
+			}
+		} else {
+			port = strings.TrimSpace(port)
+			portNum, err := strconv.Atoi(port)
+			if err != nil || port < 1 || port > 65535 {
+				continue
+			}
+			if _, exists := portSet[portNum]; !exists {
+				portSet[portNum] = struct{}{}
+				portNums = append(portNums, portNum)
+			}
+		}
+	}
+	if len(portNums) == 0 {
+		return nil, errors.New("no valid ports provided")
+	}
+	return portNums, nil
+}
+
 func main() {
+	flags := parseFlags()
+
+	// host := flags.host
+	// port := flags.port
+
+	// address := fmt.Sprintf("%v:%v", host, port)
+	// conn, err := net.Dial("tcp", address)
+	// if err != nil {
+	// 	conn.Close()
+	// }
+	// conn.Close()
+	// fmt.Printf("Port %v open on %v\n", port, host)
+
 	ports := make(chan int, 100)
 	results := make(chan int)
 	var openPorts []int
