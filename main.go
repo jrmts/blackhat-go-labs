@@ -89,6 +89,35 @@ func parsePortList(portsString string) ([]int, error) {
 	return portNums, nil
 }
 
+// parseHostList parses a comma-separated list of hosts and returns a slice of unique hostnames.
+// It returns an error if no hosts are provided or if any host is empty.
+func parseHostList(hostList string) ([]string, error) {
+	hostSlice := []string{}
+	hostSet := make(map[string]struct{})
+
+	if hostList == "" {
+		return nil, errors.New("no hosts provided")
+	}
+	hosts := strings.Split(hostList, ",")
+	for _, host := range hosts {
+		host = strings.TrimSpace(strings.ToLower(host))
+		if host == "" {
+			continue
+		}
+		if _, exists := hostSet[host]; !exists {
+			hostSet[host] = struct{}{}
+			hostSlice = append(hostSlice, host)
+		}
+	}
+	return hostSlice, nil
+}
+
+/*
+
+
+
+ */
+
 func main() {
 	flags := parseFlags()
 
