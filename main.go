@@ -24,15 +24,15 @@ func worker(ports, results chan int) { // 01
 }
 
 type ScanFlags struct {
-	host []string
-	port []int
+	hosts string
+	ports []int
 }
 
 func parseFlags() ScanFlags {
 	var flags ScanFlags
 
-	flag.StringVar(&flags.host, "host", "127.0.0.1", "Host to scan") // ! I need to fix these
-	flag.IntVar(&flags.port, "port", 80, "Port to scan")
+	flag.StringVar(&flags.hosts, "host", "127.0.0.1", "Host to scan") // ! I need to fix these. I need the ability to pass multiple hosts and ports.
+	flag.IntVar(flags.ports, "port", 80, "Port to scan")
 
 	flag.Parse()
 	return flags
@@ -121,8 +121,8 @@ func parseHostList(hostList string) ([]string, error) {
 func main() {
 	flags := parseFlags()
 
-	// host := flags.host
-	// port := flags.port
+	hosts := flags.hosts
+	ports := flags.ports
 
 	// address := fmt.Sprintf("%v:%v", host, port)
 	// conn, err := net.Dial("tcp", address)
