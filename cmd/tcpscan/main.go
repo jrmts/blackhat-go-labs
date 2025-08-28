@@ -31,7 +31,8 @@ type ScanFlags struct {
 func parseFlags() ScanFlags {
 	var flags ScanFlags
 
-	flag.StringVar(&flags.hosts, "host", "127.0.0.1", "Host to scan") // ! I need to fix these. I need the ability to pass multiple hosts and ports.
+	// ! I need to fix these. I need the ability to pass multiple hosts and ports.
+	flag.StringVar(&flags.hosts, "host", "127.0.0.1", "Host to scan")
 	flag.IntVar(flags.ports, "port", 80, "Port to scan")
 
 	flag.Parse()
